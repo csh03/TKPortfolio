@@ -1,7 +1,7 @@
 import tkinter as tk                
-from tkinter import font as tkfont  
+from tkinter import font as tkfont
 from PIL import ImageTk,Image
-import stock_viewer as sv
+#import stock_viewer as sv
 
 class TkPortfolio(tk.Tk):
 
@@ -9,67 +9,103 @@ class TkPortfolio(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         self.label_font = tkfont.Font(family='Microsoft Sans Serif', size=18, weight="bold")
-        container = tk.Frame(self)
-        container.pack(side="top", fill="both", expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self._frame = None
+        self.switch_frame(StartPage)
 
-        self.frames = {}
-        for F in (StartPage, StockViewerMain, PageTwo):
-            page_name = F.__name__
-            frame = F(parent=container, controller=self)
-            self.frames[page_name] = frame
-            frame.grid(row=0, column=0, sticky="nsew")
-
-        self.show_frame("StartPage")
-
-    def show_frame(self, page_name):
+    def switch_frame(self, page_name):
         '''Show a frame for the given page name'''
-        frame = self.frames[page_name]
-        frame.tkraise()
+        new_frame = page_name(parent=self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack(side="top", fill="both", expand=True)
+        
+    def switch_stock(self, ticker):
+        '''Show a frame for the given page name'''
+        new_frame = IndivStockViewer(parent=self,stock=ticker)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack(side="top", fill="both", expand=True)
         
     def quit(self):
         self.destroy()
 
 class StartPage(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.controller = controller
         logo_img = ImageTk.PhotoImage(Image.open("Images\logo.png"))
         logo_lbl = tk.Label(self,image=logo_img)
         logo_lbl.image = logo_img
         logo_lbl.pack(side="top", fill="x", pady=10)
         
-        button1 = tk.Button(self,fg='#494949',font=controller.label_font,text="Portfolio Creator",bd=4,width=20,height=2,
-                            command=lambda: controller.show_frame("StockViewerMain"))
-        button2 = tk.Button(self,fg='#494949',font=controller.label_font,text="Stock Tracker",bd=4,width=20,height=2,
-                            command=lambda: controller.show_frame("PageTwo"))
-        button3 = tk.Button(self,fg='#494949',font=controller.label_font,text="Exit",bd=4,width=20,height=2,
-                            command=controller.quit)
+        button1 = tk.Button(self,fg='#494949',font=parent.label_font,text="Portfolio Creator",bd=4,width=20,height=2,
+                            command=lambda: parent.switch_frame(PageTwo))
+        button2 = tk.Button(self,fg='#494949',font=parent.label_font,text="Stock Tracker",bd=4,width=20,height=2,
+                            command=lambda: parent.switch_frame(StockViewerMain))
+        button3 = tk.Button(self,fg='#494949',font=parent.label_font,text="Exit",bd=4,width=20,height=2,
+                            command=parent.quit)
         button1.pack()
         button2.pack()
         button3.pack()
 
 class StockViewerMain(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.controller = controller
-        
-        button = tk.Button(self, text="Go to the start page",
-                           command=lambda: controller.show_frame("StartPage"))
-        button.pack()
+        entry_font = tkfont.Font(family='Helvetica', size=14)
 
+        def handle_focus_in(_):
+            stock_entry.delete(0, tk.END)
+            stock_entry.config(fg='black')
+
+        def handle_focus_out(_):
+            stock_entry.delete(0, tk.END)
+            stock_entry.config(fg='grey')
+            stock_entry.insert(0, "Example: NVDA")
+
+        def handle_enter(txt):
+            print(stock_entry.get())
+            handle_focus_out('dummy')
+
+        def enter_ticker(ticker):
+            parent.switch_stock(ticker)
+
+        search_img = ImageTk.PhotoImage(file = "Images\search.png")
+
+        stock_entry = tk.Entry(self, bg='white', width=30, fg='grey',font=entry_font, bd=2)
+        button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
+                   command=lambda: parent.switch_frame(StartPage))
+        entry_button = tk.Button(self,image=search_img,bd=0,command=lambda: enter_ticker(stock_entry.get()))
+        entry_button.image = search_img
+
+        button.grid(row=0,column=0)
+        stock_entry.grid(row=0, column=1, padx=15, columnspan=2)
+        entry_button.grid(row=0,column=3)
+        
+        stock_entry.insert(0, "Example: NVDA")
+        stock_entry.bind("<FocusIn>", handle_focus_in)
+        stock_entry.bind("<FocusOut>", handle_focus_out)
+        stock_entry.bind("<Return>", handle_enter)
+
+class IndivStockViewer(tk.Frame):
+
+    def __init__(self, parent, stock):
+        tk.Frame.__init__(self, parent)
+        self.stock = stock
+
+        button = tk.Button(self, text=stock,
+                           command=lambda: parent.switch_frame(StartPage))
+        button.pack()
 
 class PageTwo(tk.Frame):
 
-    def __init__(self, parent, controller):
+    def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.controller = controller
 
         button = tk.Button(self, text="Go to the start page",
-                           command=lambda: controller.show_frame("StartPage"))
+                           command=lambda: parent.switch_frame(StartPage))
         button.pack()
 
 
