@@ -1,5 +1,6 @@
 import tkinter as tk                
 from tkinter import font as tkfont
+from tkinter import ttk
 from PIL import ImageTk,Image
 #import stock_viewer as sv
 
@@ -58,33 +59,34 @@ class StockViewerMain(tk.Frame):
 
         def handle_focus_in(_):
             stock_entry.delete(0, tk.END)
-            stock_entry.config(fg='black')
+            stock_entry.config(foreground='black')
 
         def handle_focus_out(_):
             stock_entry.delete(0, tk.END)
-            stock_entry.config(fg='grey')
-            stock_entry.insert(0, "Example: NVDA")
+            stock_entry.config(foreground='grey')
+            stock_entry.insert(0, "Example: MSFT")
 
         def handle_enter(txt):
-            print(stock_entry.get())
-            handle_focus_out('dummy')
+            parent.switch_stock(stock_entry.get())
 
         def enter_ticker(ticker):
             parent.switch_stock(ticker)
 
         search_img = ImageTk.PhotoImage(file = "Images\search.png")
+        entry = tk.StringVar()
 
-        stock_entry = tk.Entry(self, bg='white', width=30, fg='grey',font=entry_font, bd=2)
-        button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
+        stock_entry = ttk.Combobox(self, textvariable=entry, foreground='grey',
+                                   background='white',width=30, font=entry_font)
+        back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                    command=lambda: parent.switch_frame(StartPage))
         entry_button = tk.Button(self,image=search_img,bd=0,command=lambda: enter_ticker(stock_entry.get()))
         entry_button.image = search_img
 
-        button.grid(row=0,column=0)
+        back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1, padx=15, columnspan=2)
         entry_button.grid(row=0,column=3)
         
-        stock_entry.insert(0, "Example: NVDA")
+        stock_entry.set("Example: NVDA")
         stock_entry.bind("<FocusIn>", handle_focus_in)
         stock_entry.bind("<FocusOut>", handle_focus_out)
         stock_entry.bind("<Return>", handle_enter)
@@ -95,9 +97,9 @@ class IndivStockViewer(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.stock = stock
 
-        button = tk.Button(self, text=stock,
-                           command=lambda: parent.switch_frame(StartPage))
-        button.pack()
+        back_button = tk.Button(self, text=stock,font=parent.label_font,width=3,height=1,
+                           command=lambda: parent.switch_frame(StockViewerMain))
+        back_button.grid(row=0,column=0)
 
 class PageTwo(tk.Frame):
 
