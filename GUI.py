@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import ttk
 from PIL import ImageTk,Image
-#import stock_viewer as sv
+import user_similarity as nlp
 
 class TkPortfolio(tk.Tk):
 
@@ -57,39 +57,38 @@ class StockViewerMain(tk.Frame):
         tk.Frame.__init__(self, parent)
         entry_font = tkfont.Font(family='Helvetica', size=14)
 
-        def handle_focus_in(_):
-            stock_entry.delete(0, tk.END)
-            stock_entry.config(foreground='black')
-
-        def handle_focus_out(_):
-            stock_entry.delete(0, tk.END)
-            stock_entry.config(foreground='grey')
-            stock_entry.insert(0, "Example: MSFT")
-
         def handle_enter(txt):
             parent.switch_stock(stock_entry.get())
+
+        def handle_click(_):
+            if(stock_entry.get() == default_txt):
+                stock_entry.delete(0,tk.END)
+            stock_entry.config(foreground='black')
 
         def enter_ticker(ticker):
             parent.switch_stock(ticker)
 
         search_img = ImageTk.PhotoImage(file = "Images\search.png")
-        entry = tk.StringVar()
-
-        stock_entry = ttk.Combobox(self, textvariable=entry, foreground='grey',
-                                   background='white',width=30, font=entry_font)
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                    command=lambda: parent.switch_frame(StartPage))
         entry_button = tk.Button(self,image=search_img,bd=0,command=lambda: enter_ticker(stock_entry.get()))
         entry_button.image = search_img
+        
+        ##user input
+        test = []
+        stock_entry = ttk.Combobox(self, foreground='grey', values=test,
+                                   background='white',width=30, font=entry_font)
+
+        default_txt = "Example: MSFT"
+        stock_entry.insert(0, default_txt)
+        stock_entry.config(foreground='grey')
+        stock_entry.bind("<Return>", handle_enter)
+        stock_entry.bind("<Button-1>", handle_click)
+        ##
 
         back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1, padx=15, columnspan=2)
         entry_button.grid(row=0,column=3)
-        
-        stock_entry.set("Example: NVDA")
-        stock_entry.bind("<FocusIn>", handle_focus_in)
-        stock_entry.bind("<FocusOut>", handle_focus_out)
-        stock_entry.bind("<Return>", handle_enter)
 
 class IndivStockViewer(tk.Frame):
 
