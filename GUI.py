@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import ttk
 from PIL import ImageTk,Image
-import user_similarity as nlp
+import user_similarity as sim
 
 class TkPortfolio(tk.Tk):
 
@@ -57,16 +57,20 @@ class StockViewerMain(tk.Frame):
         tk.Frame.__init__(self, parent)
         entry_font = tkfont.Font(family='Helvetica', size=14)
 
-        def handle_enter(txt):
-            parent.switch_stock(stock_entry.get())
+        def handle_enter(e):
+            parent.switch_stock(stock_entry.get().upper())
 
-        def handle_click(_):
+        def handle_click(e):
             if(stock_entry.get() == default_txt):
                 stock_entry.delete(0,tk.END)
             stock_entry.config(foreground='black')
 
+        def handle_key(e):
+            recommend = sim.get_autofill(stock_entry.get())
+            stock_entry['values'] = recommend
+            
         def enter_ticker(ticker):
-            parent.switch_stock(ticker)
+            parent.switch_stock(ticker.upper())
 
         search_img = ImageTk.PhotoImage(file = "Images\search.png")
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
@@ -78,12 +82,14 @@ class StockViewerMain(tk.Frame):
         test = []
         stock_entry = ttk.Combobox(self, foreground='grey', values=test,
                                    background='white',width=30, font=entry_font)
+        stock_entry.DroppedDown = True
 
         default_txt = "Example: MSFT"
         stock_entry.insert(0, default_txt)
         stock_entry.config(foreground='grey')
         stock_entry.bind("<Return>", handle_enter)
         stock_entry.bind("<Button-1>", handle_click)
+        stock_entry.bind("<KeyRelease>", handle_key)
         ##
 
         back_button.grid(row=0,column=0)
