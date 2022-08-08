@@ -18,12 +18,18 @@ sns.set_style('whitegrid')
 
 from datetime import datetime
 '''
+
 stocks = pd.read_csv('stock_list.csv')
 mega_stocks = stocks[stocks['Market Cap'] > 2e11]
 
+#seeding random on different days
+tmp = datetime.today().strftime("%Y:%m:%d")
+random.seed(tmp)
+
+todays_8 = random.sample(mega_stocks['Symbol'].squeeze().tolist(),8)
+
 def gen_random_8():
-    tmp = mega_stocks['Symbol'].squeeze().tolist()
-    return random.sample(tmp,8)
+    return todays_8
 
 def get_pct_change(ticker):
     data = yf.Ticker('TSLA').info

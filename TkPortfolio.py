@@ -12,12 +12,13 @@ class TkPortfolio(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.label_font = tkfont.Font(family='Microsoft Sans Serif', size=18, weight="bold")
+        self.label_font = tkfont.Font(family='Bahnschrift', size=18)
         self._frame = None
         self.switch_frame(StartPage)
-
+    
     def switch_frame(self, page_name):
-        '''Show a frame for the given page name'''
+        self.update_idletasks()
+        
         new_frame = page_name(parent=self)
         if self._frame is not None:
             self._frame.destroy()
@@ -59,7 +60,7 @@ class StockViewerMain(tk.Frame):
     def __init__(self, parent):
         self.parent = parent
         tk.Frame.__init__(self, parent)
-        entry_font = tkfont.Font(family='Helvetica', size=14)
+        entry_font = tkfont.Font(family='Bahnschrift Light', size=16)
 
         def handle_enter(e):
             entry = stock_entry.get().upper()
@@ -81,13 +82,12 @@ class StockViewerMain(tk.Frame):
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                    command=lambda: parent.switch_frame(StartPage))
         entry_button = tk.Button(self,image=search_img,bd=0,command=lambda: self.enter_ticker(stock_entry.get().upper()))
+        refresh_button = tk.Button(self,text="Refresh",font=entry_font,command=lambda: parent.switch_frame(StockViewerMain))
         entry_button.image = search_img
         
         ##user input
         stock_entry = ttk.Combobox(self, foreground='grey', values=[],
                                    background='white',width=30, font=entry_font)
-        stock_entry.DroppedDown = True
-
         default_txt = "Search - Example: \"MSFT\""
         stock_entry.insert(0, default_txt)
         stock_entry.config(foreground='grey')
@@ -99,7 +99,9 @@ class StockViewerMain(tk.Frame):
         back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1, padx=15, columnspan=2)
         entry_button.grid(row=0,column=3)
+        refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font,fg='#575757').grid(row=1,column=1,pady=15)
+        
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
             tmp.subframe.grid(row=count+2,column=1,pady=(15,0),padx=10)
@@ -112,7 +114,7 @@ class StockViewerMain(tk.Frame):
             self.subframe = tk.Frame(instance_main)
             self.info = tk.Label(self.subframe,font=display_font,width=15)
             
-            ticker = tk.Button(self.subframe,text=self.stock,font=display_font,width=15,
+            ticker = tk.Button(self.subframe,text=self.stock,font=display_font,width=13,
                                command=lambda: instance_main.enter_ticker(self.stock))
 
             ticker.grid(row=0,column=0)
@@ -133,8 +135,12 @@ class IndivStockViewer(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.stock = stock
 
-        back_button = tk.Button(self, text=stock,font=parent.label_font,width=3,height=1,
+        back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                            command=lambda: parent.switch_frame(StockViewerMain))
+        stock_symbol = tk.Label(self, text=self.stock)
+        current_price = tk.Label(self, text = str(round(stock_info.get_live_price(self.stock),2)))
+        stock_symbol.grid(row=0,column=1)
+        current_price.grid(row=0,column=2)
         back_button.grid(row=0,column=0)
 
 class PageTwo(tk.Frame):
