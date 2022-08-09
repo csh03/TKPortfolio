@@ -5,7 +5,6 @@ from tkinter import messagebox
 from PIL import ImageTk,Image
 import user_similarity as sim
 import stock_viewer as sv
-from yahoo_fin import stock_info
 
 class TkPortfolio(tk.Tk):
 
@@ -113,15 +112,18 @@ class StockViewerMain(tk.Frame):
             self.stock = stock
             self.subframe = tk.Frame(instance_main)
             self.info = tk.Label(self.subframe,font=display_font,width=15)
+            self.change = tk.Label(self.subframe,font=display_font,width=15)
             
             ticker = tk.Button(self.subframe,text=self.stock,font=display_font,width=13,
                                command=lambda: instance_main.enter_ticker(self.stock))
 
             ticker.grid(row=0,column=0)
             self.info.grid(row=0,column=1,padx=15)
+            self.change.grid(row=0,column=2,padx=15)
             
         def update_price(self):
-            self.info.config(text=str(round(stock_info.get_live_price(self.stock),2)))
+            self.info.config(text=str(sv.get_current_price(self.stock)))
+            self.change.config(text=str(sv.get_pct_change(self.stock)[0]))
 
     def enter_ticker(self,entry):
         if not sv.stocks[sv.stocks['Symbol'] == entry].empty:
@@ -138,7 +140,7 @@ class IndivStockViewer(tk.Frame):
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                            command=lambda: parent.switch_frame(StockViewerMain))
         stock_symbol = tk.Label(self, text=self.stock)
-        current_price = tk.Label(self, text = str(round(stock_info.get_live_price(self.stock),2)))
+        current_price = tk.Label(self, text = sv.get_current_price(self.stock))
         stock_symbol.grid(row=0,column=1)
         current_price.grid(row=0,column=2)
         back_button.grid(row=0,column=0)
