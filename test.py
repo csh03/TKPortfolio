@@ -1,18 +1,13 @@
-import tkinter as tk
-from time import sleep
+from alpaca_trade_api.rest import REST
 
-def task():
-    # The window will stay open until this function call ends.
-    sleep(2) # Replace this with the code you want to run
-    root.destroy()
 
-root = tk.Tk()
-root.title("Example")
+api = REST("3Hus1kCjzawtebPulmdnXPJhma9KjjZX1q0flajT")
+import datetime
 
-label = tk.Label(root, text="Waiting for task to finish.")
-label.pack()
+def process_quote(quote):
+    # process quote
+    print(quote)
 
-root.after(200, task)
-root.mainloop()
-
-print("Main loop is now over and we can do other stuff.")
+quote_iter = api.get_quotes_iter("AAPL", datetime.now(), datetime.now(), limit=10)
+for quote in quote_iter:
+    process_quote(quote)

@@ -2,7 +2,7 @@
 import pandas as pd
 from pandas import Series,DataFrame
 import random
-from polygon import RESTClient
+#from polygon import RESTClient
 from yahoo_fin import stock_info
 import pandas_datareader.data as web
 from datetime import datetime,timedelta
@@ -22,9 +22,8 @@ from datetime import datetime
 stocks = pd.read_csv('stock_list.csv')
 mega_stocks = stocks[stocks['Market Cap'] > 2e11]
 
-api_key = "W4wUBkKhnuicYooQTJE4cWIkXhNqfqch"
-
-client = RESTClient(api_key)
+#api_key = "W4wUBkKhnuicYooQTJE4cWIkXhNqfqch"
+#client = RESTClient(api_key)
 
 #seeding random on different days
 tmp = datetime.today().strftime("%Y:%m:%d")
