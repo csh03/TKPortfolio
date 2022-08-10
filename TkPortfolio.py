@@ -123,15 +123,15 @@ class StockViewerMain(tk.Frame):
             self.change.grid(row=0,column=2,padx=15)
             
         def update_price(self):
-            self.current.config(text=str(sv.get_current_price(self.stock)))
+            self.current.config(text=str(sv.get_current(self.stock)))
             pct_change = sv.get_pct_change(self.stock)
             self.change.config(text=str(pct_change))
-
+            
             if(pct_change[0] < 0):
                 self.change.config(fg="#EF2D2D")
             elif(pct_change[0] > 0):
                 self.change.config(fg="#27D224")
-
+            
     def enter_ticker(self,entry):
         if not sv.stocks[sv.stocks['Symbol'] == entry].empty:
             self.parent.switch_stock(entry)
@@ -147,7 +147,7 @@ class IndivStockViewer(tk.Frame):
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                            command=lambda: parent.switch_frame(StockViewerMain))
         stock_symbol = tk.Label(self, text=self.stock)
-        current_price = tk.Label(self, text = sv.get_current_price(self.stock))
+        current_price = tk.Label(self, text = sv.get_current(self.stock))
         stock_symbol.grid(row=0,column=1)
         current_price.grid(row=0,column=2)
         back_button.grid(row=0,column=0)
