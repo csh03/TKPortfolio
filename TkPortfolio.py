@@ -60,6 +60,7 @@ class StockViewerMain(tk.Frame):
         self.parent = parent
         tk.Frame.__init__(self, parent)
         entry_font = tkfont.Font(family='Bahnschrift Light', size=16)
+        entry_font_bold = tkfont.Font(family='Bahnschrift Light', size=16, weight='bold')
 
         def handle_enter(e):
             entry = stock_entry.get().upper()
@@ -96,14 +97,14 @@ class StockViewerMain(tk.Frame):
         ##
         
         back_button.grid(row=0,column=0)
-        stock_entry.grid(row=0, column=1, padx=15, columnspan=2)
+        stock_entry.grid(row=0, column=1,columnspan=2,padx=(25,0))
         entry_button.grid(row=0,column=3)
         refresh_button.grid(row=0,column=4,padx=(30,0))
-        tk.Label(self,text="Today's Market Updates",font=entry_font,fg='#575757').grid(row=1,column=1,pady=15)
+        tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
         
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
-            tmp.subframe.grid(row=count+2,column=1,pady=(15,0),padx=10)
+            tmp.subframe.grid(row=count+2,column=1,pady=(15,0),padx=10,columnspan=5)
             tmp.update_price()
             
     class stockPreview:
@@ -111,19 +112,25 @@ class StockViewerMain(tk.Frame):
             display_font = tkfont.Font(family='Bahnschrift Light', size=18)
             self.stock = stock
             self.subframe = tk.Frame(instance_main)
-            self.info = tk.Label(self.subframe,font=display_font,width=15)
+            self.current = tk.Label(self.subframe,font=display_font,width=15)
             self.change = tk.Label(self.subframe,font=display_font,width=15)
             
             ticker = tk.Button(self.subframe,text=self.stock,font=display_font,width=13,
                                command=lambda: instance_main.enter_ticker(self.stock))
 
             ticker.grid(row=0,column=0)
-            self.info.grid(row=0,column=1,padx=15)
+            self.current.grid(row=0,column=1,padx=15)
             self.change.grid(row=0,column=2,padx=15)
             
         def update_price(self):
-            self.info.config(text=str(sv.get_current_price(self.stock)))
-            self.change.config(text=str(sv.get_pct_change(self.stock)[0]))
+            self.current.config(text=str(sv.get_current_price(self.stock)))
+            pct_change = sv.get_pct_change(self.stock)
+            self.change.config(text=str(pct_change))
+
+            if(pct_change[0] < 0):
+                self.change.config(fg="#EF2D2D")
+            elif(pct_change[0] > 0):
+                self.change.config(fg="#27D224")
 
     def enter_ticker(self,entry):
         if not sv.stocks[sv.stocks['Symbol'] == entry].empty:
