@@ -1,18 +1,19 @@
-import tkinter as tk
-from time import sleep
+import alpaca_trade_api as tradeapi
+from alpaca_trade_api.rest import TimeFrame
+from datetime import datetime, timedelta
 
-def task():
-    # The window will stay open until this function call ends.
-    sleep(2) # Replace this with the code you want to run
-    root.destroy()
+# API Info for fetching data, portfolio, etc. from Alpaca
+BASE_URL = "https://paper-api.alpaca.markets"
+ALPACA_API_KEY = "PKSNUPWHX9Q1PB1DDX6C"
+ALPACA_SECRET_KEY = "M6xWH9bDmHfQZdgvTQYYCY32fcoOA7G5Cv63yF8j"
 
-root = tk.Tk()
-root.title("Example")
+endtime = datetime.now() - timedelta(days=1)
+start = datetime(endtime.year,endtime.month,endtime.day-7)
 
-label = tk.Label(root, text="Waiting for task to finish.")
-label.pack()
+# Instantiate REST API Connection
+api = tradeapi.REST(key_id=ALPACA_API_KEY, secret_key=ALPACA_SECRET_KEY, 
+                    base_url=BASE_URL, api_version='v2')
 
-root.after(200, task)
-root.mainloop()
-
-print("Main loop is now over and we can do other stuff.")
+test = api.get_bars("NVDA", TimeFrame.Day, start.strftime("%Y-%m-%d"),
+                    endtime.strftime("%Y-%m-%d")).df
+print(test)
