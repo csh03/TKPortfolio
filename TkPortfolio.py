@@ -98,7 +98,7 @@ class StockViewerMain(tk.Frame):
         
         back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1,columnspan=2,padx=(25,0))
-        entry_button.grid(row=0,column=3)
+        entry_button.grid(row=0,column=3,padx=(30,0))
         refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
         
@@ -110,26 +110,28 @@ class StockViewerMain(tk.Frame):
     class stockPreview:
         def __init__(self, stock, instance_main):
             display_font = tkfont.Font(family='Bahnschrift Light', size=18)
+            display_font_small = tkfont.Font(family='Bahnschrift Light', size=15)
             self.stock = stock
             self.subframe = tk.Frame(instance_main)
-            self.current = tk.Label(self.subframe,font=display_font,width=15)
-            self.change = tk.Label(self.subframe,font=display_font,width=15)
+            self.current = tk.Label(self.subframe,font=display_font_small,width=15)
+            self.change = tk.Label(self.subframe,font=display_font_small,width=15)
             
             ticker = tk.Button(self.subframe,text=self.stock,font=display_font,width=13,
                                command=lambda: instance_main.enter_ticker(self.stock))
 
             ticker.grid(row=0,column=0)
-            self.current.grid(row=0,column=1,padx=15)
-            self.change.grid(row=0,column=2,padx=15)
+            self.current.grid(row=0,column=1,padx=(15,0))
+            self.change.grid(row=0,column=2)
             
         def update_price(self):
-            self.current.config(text=str(sv.get_current(self.stock)))
+            self.current.config(text=str(sv.get_current(self.stock)) + "  USD")
             pct_change = sv.get_pct_change(self.stock)
-            self.change.config(text=str(pct_change))
             
             if(pct_change[0] < 0):
+                self.change.config(text="-" + str(pct_change[0]) + " (" + str(pct_change[1]) + "%)" + " ▼")
                 self.change.config(fg="#EF2D2D")
-            elif(pct_change[0] > 0):
+            elif(pct_change[0] > 0):         
+                self.change.config(text="+" + str(pct_change[0]) + " (" + str(pct_change[1]) + "%)" + " ▲")
                 self.change.config(fg="#27D224")
             
     def enter_ticker(self,entry):

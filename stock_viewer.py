@@ -2,7 +2,6 @@
 import pandas as pd
 from pandas import Series,DataFrame
 import random
-from yahoo_fin import stock_info
 import alpaca_trade_api as tradeapi
 from alpaca_trade_api.rest import TimeFrame
 from datetime import datetime,timedelta
@@ -41,8 +40,8 @@ todays_8 = random.sample(mega_stocks['Symbol'].squeeze().tolist(),8)
 
 def get_current(ticker):
     request_params = StockLatestQuoteRequest(symbol_or_symbols=ticker)
-    latest_quote = client.get_stock_latest_quote(request_params)
-    return round(latest_quote[ticker].ask_price,2)
+    latest_bar = client.get_stock_latest_bar(request_params)
+    return round(latest_bar[ticker].close,2)
 
 def gen_random_8():
     return todays_8
@@ -57,5 +56,3 @@ def get_pct_change(ticker):
     diff = (current - prev_close)
     pct_change = diff/prev_close*100
     return (round(diff,2), round(pct_change,2))
-
-print(get_pct_change('NVDA'))
