@@ -1,60 +1,36 @@
-import tkinter
+# For reading stock data from yahoo
+import pandas_datareader.data as web
 
-from matplotlib.backends.backend_tkagg import (
-    FigureCanvasTkAgg, NavigationToolbar2Tk)
-# Implement the default Matplotlib key bindings.
-from matplotlib.backend_bases import key_press_handler
-from matplotlib.figure import Figure
+# For time stamps
+from datetime import datetime
 
+import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import pandas as pd
+import tkinter as tk
+import ttk
+import seaborn as sns
+sns.set_style('darkgrid')
 
+root = tk.Tk()
+endtime = datetime.now()
+start = datetime(endtime.year-1,endtime.month,endtime.day)
 
-root = tkinter.Tk()
-root.wm_title("Embedding in Tk")
+test = web.DataReader('TSLA','yahoo',start,endtime)
 
-fig = Figure(figsize=(5, 4), dpi=100)
-t = np.arange(0, 3, .01)
-ax = fig.add_subplot()
-line, = ax.plot(t, 2 * np.sin(2 * np.pi * t))
-ax.set_xlabel("time [s]")
-ax.set_ylabel("f(t)")
+lf = ttk.Labelframe(root, text='Plot Area')
+lf.grid(row=0, column=0, sticky='nwes', padx=3, pady=3)
 
-canvas = FigureCanvasTkAgg(fig, master=root)  # A tk.DrawingArea.
-canvas.draw()
+fig = Figure(figsize=(12,4), dpi=100)
 
-# pack_toolbar=False will make it easier to use a layout manager later on.
-toolbar = NavigationToolbar2Tk(canvas, root, pack_toolbar=False)
-toolbar.update()
+ax = fig.add_subplot(111)
+ax.set_ylim([500,1500])
 
-canvas.mpl_connect(
-    "key_press_event", lambda event: print(f"you pressed {event.key}"))
-canvas.mpl_connect("key_press_event", key_press_handler)
+sns.lineplot(x='Date',y='Adj Close',data=test,ax=ax)
 
-button_quit = tkinter.Button(master=root, text="Quit", command=root.quit)
+canvas = FigureCanvasTkAgg(fig, master=lf)
+canvas.get_tk_widget().grid(row=0, column=0)
 
-
-def update_frequency(new_val):
-    # retrieve frequency
-    f = float(new_val)
-
-    # update data
-    y = 2 * np.sin(2 * np.pi * f * t)
-    line.set_data(t, y)
-
-    # required to update canvas and attached toolbar!
-    canvas.draw()
-
-
-slider_update = tkinter.Scale(root, from_=1, to=5, orient=tkinter.HORIZONTAL,
-                              command=update_frequency, label="Frequency [Hz]")
-
-# Packing order is important. Widgets are processed sequentially and if there
-# is no space left, because the window is too small, they are not displayed.
-# The canvas is rather flexible in its size, so we pack it last which makes
-# sure the UI controls are displayed as long as possible.
-button_quit.pack(side=tkinter.BOTTOM)
-slider_update.pack(side=tkinter.BOTTOM)
-toolbar.pack(side=tkinter.BOTTOM, fill=tkinter.X)
-canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
-
-tkinter.mainloop()
+root.mainloop()

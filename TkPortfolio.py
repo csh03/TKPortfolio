@@ -95,12 +95,22 @@ class StockViewerMain(tk.Frame):
         stock_entry.bind("<Button-1>", handle_click)
         stock_entry.bind("<KeyRelease>", handle_key)
         ##
+
+        ##DOW Jones and SPY graphs
+        sp500 = tk.Frame(self, width=500, height=50)
+        spy_pct = sv.get_pct_change('SPY')
+        
+        spy_current = tk.Label(sp500, text = "S & P 500 (SPY) " + "%.2f" % sv.get_current('SPY'), font=entry_font)
+        #self.config_updates(spy_updates,spy_pct)
+        spy_current.place(relx=0.5,rely=0.5,anchor=tk.CENTER)
+        tk.Label(sp500, text = "hi", font=entry_font).place(relx=0.8,rely=0.5,anchor=tk.CENTER)
         
         back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1,columnspan=2,padx=(25,0))
         entry_button.grid(row=0,column=3,padx=(30,0))
         refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
+        sp500.grid(row=0,column=6, padx=(60,0))
         
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
@@ -115,6 +125,7 @@ class StockViewerMain(tk.Frame):
             self.subframe = tk.Frame(instance_main)
             self.current = tk.Label(self.subframe,font=display_font_small,width=15)
             self.change = tk.Label(self.subframe,font=display_font_small,width=15)
+            self.main = instance_main
             
             ticker = tk.Button(self.subframe,text=self.stock,font=display_font,width=13,
                                command=lambda: instance_main.enter_ticker(self.stock))
@@ -124,21 +135,26 @@ class StockViewerMain(tk.Frame):
             self.change.grid(row=0,column=2)
             
         def update_price(self):
-            self.current.config(text=str(sv.get_current(self.stock)) + "  USD")
+            self.current.config(text="%.2f" % sv.get_current(self.stock) + "  USD")
             pct_change = sv.get_pct_change(self.stock)
-            
-            if(pct_change[0] < 0):
-                self.change.config(text="-" + str(pct_change[0]) + " (" + str(pct_change[1]) + "%)" + " ▼")
-                self.change.config(fg="#EF2D2D")
-            elif(pct_change[0] > 0):         
-                self.change.config(text="+" + str(pct_change[0]) + " (" + str(pct_change[1]) + "%)" + " ▲")
-                self.change.config(fg="#27D224")
+            self.main.config_updates(self.change,pct_change)
             
     def enter_ticker(self,entry):
         if not sv.stocks[sv.stocks['Symbol'] == entry].empty:
             self.parent.switch_stock(entry)
         else:
             messagebox.showwarning("Warning","Stock Symbol Not Found!")
+
+    def config_updates(self,label,vals):
+        if(vals[0] < 0):
+            label.config(text=str(vals[0]) + " (" + str(vals[1]) + "%)" + " ▼")
+            label.config(fg="#EF2D2D")
+        elif(vals[0] > 0):         
+            label.config(text="+" + str(vals[0]) + " (" + str(vals[1]) + "%)" + " ▲")
+            label.config(fg="#27D224")
+        else:
+            label.config(text="+0.00 (0.00%)")
+            label.config(fg="#27D224")
 
 class IndivStockViewer(tk.Frame):
 

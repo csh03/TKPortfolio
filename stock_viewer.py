@@ -55,4 +55,4 @@ def get_pct_change(ticker):
                     endtime.strftime("%Y-%m-%d")).df.iloc[-1]['close']
     diff = (current - prev_close)
     pct_change = diff/prev_close*100
-    return (round(diff,2), round(pct_change,2))
+    return (round(diff,2),round(pct_change,2))
