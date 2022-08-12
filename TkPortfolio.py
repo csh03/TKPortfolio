@@ -9,7 +9,7 @@ import stock_viewer as sv
 # For Visualization
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.figure import Figure
+from matplotlib.pyplot import Figure
 import seaborn as sns
 sns.set_style('darkgrid')
 
@@ -104,31 +104,58 @@ class StockViewerMain(tk.Frame):
         ##
 
         #DOW Jones and SPY graphs
-        sp500 = tk.Frame(self, width=500, height=500)
-        spy_current = tk.Label(sp500, text = "S & P 500 (SPY) " + "%.2f" % sv.get_current('SPY'), font=entry_font)
+        timeframes = ["1d","1w","1m","1y","5y"]
+        
+        sp500 = tk.Frame(self, width=500, height=300)
+        spy_current = tk.Label(sp500, text = "S & P 500 (SPY) " + "%.2f" % sv.get_current('SPY') + " USD", font=entry_font)
         spy_change = tk.Label(sp500, font=entry_font)
         self.config_updates(spy_change,sv.get_pct_change('SPY'))
-
-        spy_fig = Figure(figsize=(4,2),dpi=100)
+        
+        spy_fig = Figure(figsize=(5.5,2.2),dpi=100)
+        spy_fig.patch.set_facecolor('#F0F0F0')
         spy_ax = spy_fig.add_subplot(111)
-        sns.lineplot(x='timestamp',y='close',data=sv.get_historical_data('SPY',"1y"),ax=spy_ax)
+        plot = sns.lineplot(x='timestamp',y='close',lw=0.8,data=sv.get_historical_data('SPY',"1y"),ax=spy_ax)
+        plot.set(xlabel=None,ylabel=None)
         spy_canvas = FigureCanvasTkAgg(spy_fig, master=sp500)
         
-        spy_current.grid(row=0,column=0)
-        spy_change.grid(row=0,column=1)
-        spy_canvas.get_tk_widget().grid(row=1,column=0)
+        spy_current.grid(row=0,column=0,padx=(30,0),columnspan=3)
+        spy_change.grid(row=0,column=3,padx=(0,30),columnspan=2)
+        spy_canvas.get_tk_widget().grid(row=1,column=0,columnspan=5)
+        
+        for count,val in enumerate(timeframes):
+            tk.Button(sp500,text=val,width=15).grid(row=2,column=count,pady=(15,0))
 
+        dia = tk.Frame(self, width=500, height=300)
+        dia_current = tk.Label(dia, text = "Dow Jones (DIA) " + "%.2f" % sv.get_current('DIA') + " USD", font=entry_font)
+        dia_change = tk.Label(dia, font=entry_font)
+        self.config_updates(dia_change,sv.get_pct_change('DIA'))
+        
+        dia_fig = Figure(figsize=(5.5,2.2),dpi=100)
+        dia_fig.patch.set_facecolor('#F0F0F0')
+        dia_ax = dia_fig.add_subplot(111)
+        plot = sns.lineplot(x='timestamp',y='close',lw=0.8,data=sv.get_historical_data('DIA',"1y"),ax=dia_ax)
+        plot.set(xlabel=None,ylabel=None)
+        dia_canvas = FigureCanvasTkAgg(dia_fig, master=dia)
+        
+        dia_current.grid(row=0,column=0,padx=(30,0),columnspan=3)
+        dia_change.grid(row=0,column=3,padx=(0,30),columnspan=2)
+        dia_canvas.get_tk_widget().grid(row=1,column=0,columnspan=5)
+        
+        for count,val in enumerate(timeframes):
+            tk.Button(dia,text=val,width=15).grid(row=2,column=count,pady=(15,0))
+        
         #blit items on screen
         back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1,columnspan=2,padx=(25,0))
         entry_button.grid(row=0,column=3,padx=(30,0))
         refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
-        sp500.grid(row=0,column=6, padx=(60,0),rowspan=4)
+        sp500.grid(row=0,column=5, padx=(45,0), pady=(15,0), rowspan=5)
+        dia.grid(row=5,column=5, padx=(45,0), pady=(15,0), rowspan=5)
         
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
-            tmp.subframe.grid(row=count+2,column=1,pady=(15,0),padx=10,columnspan=5)
+            tmp.subframe.grid(row=count+2,column=1,pady=(15,0),padx=10,columnspan=4)
             tmp.update_price()
             
     class stockPreview:

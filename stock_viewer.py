@@ -2,7 +2,6 @@
 import pandas as pd
 from pandas import Series,DataFrame
 import random
-import alpaca_trade_api as tradeapi
 from alpaca.data.timeframe import TimeFrame
 from datetime import datetime,timedelta
 
@@ -58,16 +57,13 @@ def get_pct_change(ticker):
 
 def get_historical_data(ticker,timeframe):
     now = datetime.now()
-    if(timeframe == "1d"):
-        start = now
-    elif(timeframe == "1w"):
-        start = datetime(now.year,now.month,now.day - 7)
-    elif(timeframe == "1m"):
-        start = datetime(now.year,now.month - 1,now.day)
-    elif(timeframe == "1y"):
-        start = datetime(now.year - 1,now.month,now.day)
-    elif(timeframe == "5y"):
-        start = datetime(now.year - 5,now.month,now.day)
+    timeframe_dict = {"1d":now,
+                      "1w":datetime(now.year,now.month,now.day - 7),
+                      "1m":datetime(now.year,now.month - 1,now.day),
+                      "1y":datetime(now.year - 1,now.month,now.day),
+                      "5y":datetime(now.year - 5,now.month,now.day)
+                      }
+    start = timeframe_dict[timeframe]
 
     request_params = StockBarsRequest(
                         symbol_or_symbols=ticker,
