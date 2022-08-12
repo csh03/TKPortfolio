@@ -150,8 +150,8 @@ class StockViewerMain(tk.Frame):
         entry_button.grid(row=0,column=3,padx=(30,0))
         refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
-        sp500.grid(row=0,column=5, padx=(45,0), pady=(15,0), rowspan=5)
-        dia.grid(row=5,column=5, padx=(45,0), pady=(15,0), rowspan=5)
+        sp500.grid(row=0,column=5, padx=(45,0), pady=(25,0), rowspan=5)
+        dia.grid(row=5,column=5, padx=(45,0), pady=(25,0), rowspan=5)
         
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
