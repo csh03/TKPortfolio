@@ -3,11 +3,11 @@ import pandas as pd
 from pandas import Series,DataFrame
 import random
 import alpaca_trade_api as tradeapi
-from alpaca_trade_api.rest import TimeFrame
+from alpaca.data.timeframe import TimeFrame
 from datetime import datetime,timedelta
 
 from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import StockLatestQuoteRequest
+from alpaca.data.requests import StockLatestQuoteRequest,StockBarsRequest
 
 '''
 import numpy as np
@@ -21,16 +21,10 @@ sns.set_style('whitegrid')
 stocks = pd.read_csv('stock_list.csv')
 mega_stocks = stocks[stocks['Market Cap'] > 2e11]
 
-BASE_URL = "https://paper-api.alpaca.markets"
 ALPACA_API_KEY = "PKSNUPWHX9Q1PB1DDX6C"
 ALPACA_SECRET_KEY = "M6xWH9bDmHfQZdgvTQYYCY32fcoOA7G5Cv63yF8j"
 
-api = tradeapi.REST(key_id=ALPACA_API_KEY, secret_key=ALPACA_SECRET_KEY, 
-                    base_url=BASE_URL, api_version='v2')
-client = StockHistoricalDataClient(ALPACA_API_KEY, ALPACA_SECRET_KEY)
-
-endtime = datetime.now() - timedelta(days=1)
-start = datetime(endtime.year,endtime.month,endtime.day-7)
+client = StockHistoricalDataClient(ALPACA_API_KEY,ALPACA_SECRET_KEY)
 
 #seeding random on different days
 tmp = datetime.today().strftime("%Y:%m:%d")
@@ -46,13 +40,40 @@ def get_current(ticker):
 def gen_random_8():
     return todays_8
 
-endtime = datetime.now() - timedelta(1)
-start = datetime(endtime.year,endtime.month,endtime.day - 2)
-
 def get_pct_change(ticker):
+    end = datetime.now() - timedelta(days=1)
+    start = datetime.now() - timedelta(days=4)
     current = get_current(ticker)
-    prev_close = api.get_bars(ticker, TimeFrame.Day, start.strftime("%Y-%m-%d"),
-                    endtime.strftime("%Y-%m-%d")).df.iloc[-1]['close']
+
+    request_params = StockBarsRequest(
+                    symbol_or_symbols=ticker,
+                    timeframe=TimeFrame.Day,
+                    start=start.strftime("%Y-%m-%d"),
+                    end = end.strftime("%Y-%m-%d")
+                 )
+    prev_close = client.get_stock_bars(request_params).df.iloc[-1]['close']
     diff = (current - prev_close)
     pct_change = diff/prev_close*100
     return (round(diff,2),round(pct_change,2))
+
+def get_historical_data(ticker,timeframe):
+    now = datetime.now()
+    if(timeframe == "1d"):
+        start = now
+    elif(timeframe == "1w"):
+        start = datetime(now.year,now.month,now.day - 7)
+    elif(timeframe == "1m"):
+        start = datetime(now.year,now.month - 1,now.day)
+    elif(timeframe == "1y"):
+        start = datetime(now.year - 1,now.month,now.day)
+    elif(timeframe == "5y"):
+        start = datetime(now.year - 5,now.month,now.day)
+
+    request_params = StockBarsRequest(
+                        symbol_or_symbols=ticker,
+                        timeframe=TimeFrame.Day,
+                        start=start.strftime("%Y-%m-%d")
+                     )
+    bars = client.get_stock_bars(request_params)
+
+    return bars.df

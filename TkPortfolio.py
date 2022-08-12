@@ -6,6 +6,13 @@ from PIL import ImageTk,Image
 import user_similarity as sim
 import stock_viewer as sv
 
+# For Visualization
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+import seaborn as sns
+sns.set_style('darkgrid')
+
 class TkPortfolio(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -85,7 +92,7 @@ class StockViewerMain(tk.Frame):
         refresh_button = tk.Button(self,text="Refresh",font=entry_font,command=lambda: parent.switch_frame(StockViewerMain))
         entry_button.image = search_img
         
-        ##user input
+        #user input
         stock_entry = ttk.Combobox(self, foreground='grey', values=[],
                                    background='white',width=30, font=entry_font)
         default_txt = "Search - Example: \"MSFT\""
@@ -96,21 +103,28 @@ class StockViewerMain(tk.Frame):
         stock_entry.bind("<KeyRelease>", handle_key)
         ##
 
-        ##DOW Jones and SPY graphs
-        sp500 = tk.Frame(self, width=500, height=50)
-        spy_pct = sv.get_pct_change('SPY')
-        
+        #DOW Jones and SPY graphs
+        sp500 = tk.Frame(self, width=500, height=500)
         spy_current = tk.Label(sp500, text = "S & P 500 (SPY) " + "%.2f" % sv.get_current('SPY'), font=entry_font)
-        #self.config_updates(spy_updates,spy_pct)
-        spy_current.place(relx=0.5,rely=0.5,anchor=tk.CENTER)
-        tk.Label(sp500, text = "hi", font=entry_font).place(relx=0.8,rely=0.5,anchor=tk.CENTER)
+        spy_change = tk.Label(sp500, font=entry_font)
+        self.config_updates(spy_change,sv.get_pct_change('SPY'))
+
+        spy_fig = Figure(figsize=(4,2),dpi=100)
+        spy_ax = spy_fig.add_subplot(111)
+        sns.lineplot(x='timestamp',y='close',data=sv.get_historical_data('SPY',"1y"),ax=spy_ax)
+        spy_canvas = FigureCanvasTkAgg(spy_fig, master=sp500)
         
+        spy_current.grid(row=0,column=0)
+        spy_change.grid(row=0,column=1)
+        spy_canvas.get_tk_widget().grid(row=1,column=0)
+
+        #blit items on screen
         back_button.grid(row=0,column=0)
         stock_entry.grid(row=0, column=1,columnspan=2,padx=(25,0))
         entry_button.grid(row=0,column=3,padx=(30,0))
         refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
-        sp500.grid(row=0,column=6, padx=(60,0))
+        sp500.grid(row=0,column=6, padx=(60,0),rowspan=4)
         
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
