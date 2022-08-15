@@ -3,19 +3,13 @@ import pandas as pd
 from pandas import Series,DataFrame
 import random
 from alpaca.data.timeframe import TimeFrame
+from alpaca.data.enums import Adjustment
 from datetime import datetime,timedelta
+import yfinance as yf
+import yahoo_fin.stock_info as si
 
 from alpaca.data.historical import StockHistoricalDataClient
 from alpaca.data.requests import StockLatestQuoteRequest,StockBarsRequest
-
-'''
-import numpy as np
-import yfinance as yf
-
-import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set_style('whitegrid')
-'''
 
 stocks = pd.read_csv('stock_list.csv')
 mega_stocks = stocks[stocks['Market Cap'] > 2e11]
@@ -36,8 +30,21 @@ def get_current(ticker):
     latest_bar = client.get_stock_latest_bar(request_params)
     return round(latest_bar[ticker].close,2)
 
+def get_cash_flow(ticker):
+    return si.get_cash_flow(ticker)
+
+def get_balance_sheet(ticker):
+    return si.get_balance_sheet(ticker)
+
+def get_income_statement(ticker):
+    return si.get_income_statement(ticker)
+
 def gen_random_8():
     return todays_8
+
+def get_stock_info(ticker):
+    ticker = yf.Ticker(ticker)
+    return ticker.info
 
 def get_pct_change(ticker):
     end = datetime.now() - timedelta(days=1)
@@ -48,9 +55,13 @@ def get_pct_change(ticker):
                     symbol_or_symbols=ticker,
                     timeframe=TimeFrame.Day,
                     start=start.strftime("%Y-%m-%d"),
-                    end = end.strftime("%Y-%m-%d")
-                 )
-    prev_close = client.get_stock_bars(request_params).df.iloc[-1]['close']
+                    end = end.strftime("%Y-%m-%d"),
+                    adjustment=Adjustment.SPLIT
+                    )
+    if end.weekday() == 5:
+        prev_close = client.get_stock_bars(request_params).df.iloc[-2]['close']
+    else:
+        prev_close = client.get_stock_bars(request_params).df.iloc[-1]['close']
     diff = (current - prev_close)
     pct_change = diff/prev_close*100
     return (round(diff,2),round(pct_change,2))
@@ -65,11 +76,23 @@ def get_historical_data(ticker,timeframe):
                       }
     start = timeframe_dict[timeframe]
 
-    request_params = StockBarsRequest(
-                        symbol_or_symbols=ticker,
-                        timeframe=TimeFrame.Day,
-                        start=start.strftime("%Y-%m-%d")
-                     )
+    if timeframe == "1d":
+        if start.weekday() == 5:
+            start = start - timedelta(days=1)
+        elif start.weekday() == 6:
+            start = start - timedelta(days=2)
+        request_params = StockBarsRequest(
+                            symbol_or_symbols=ticker,
+                            timeframe=TimeFrame.Hour,
+                            start=start.strftime("%Y-%m-%d")
+                         )
+    else:
+        request_params = StockBarsRequest(
+                    symbol_or_symbols=ticker,
+                    timeframe=TimeFrame.Day,
+                    start=start.strftime("%Y-%m-%d"),
+                    adjustment=Adjustment.SPLIT
+                 )
     bars = client.get_stock_bars(request_params)
 
     return bars.df

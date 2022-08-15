@@ -20,7 +20,8 @@ class TkPortfolio(tk.Tk):
 
         self.label_font = tkfont.Font(family='Bahnschrift', size=18)
         self._frame = None
-        self.switch_frame(StartPage)
+        #self.switch_frame(StartPage)
+        self.switch_stock("NVDA")
     
     def switch_frame(self, page_name):
         self.update_idletasks()
@@ -109,40 +110,31 @@ class StockViewerMain(tk.Frame):
         sp500 = tk.Frame(self, width=500, height=300)
         spy_current = tk.Label(sp500, text = "S & P 500 (SPY) " + "%.2f" % sv.get_current('SPY') + " USD", font=entry_font)
         spy_change = tk.Label(sp500, font=entry_font)
-        self.config_updates(spy_change,sv.get_pct_change('SPY'))
-        
-        spy_fig = Figure(figsize=(5.5,2.2),dpi=100)
-        spy_fig.patch.set_facecolor('#F0F0F0')
-        spy_ax = spy_fig.add_subplot(111)
-        plot = sns.lineplot(x='timestamp',y='close',lw=0.8,data=sv.get_historical_data('SPY',"1y"),ax=spy_ax)
-        plot.set(xlabel=None,ylabel=None)
-        spy_canvas = FigureCanvasTkAgg(spy_fig, master=sp500)
+        config_updates(spy_change,sv.get_pct_change('SPY'))
         
         spy_current.grid(row=0,column=0,padx=(30,0),columnspan=3)
         spy_change.grid(row=0,column=3,padx=(0,30),columnspan=2)
-        spy_canvas.get_tk_widget().grid(row=1,column=0,columnspan=5)
-        
-        for count,val in enumerate(timeframes):
-            tk.Button(sp500,text=val,width=15).grid(row=2,column=count,pady=(15,0))
+        tk.Button(sp500,text="1d",width=15,command=lambda: update_graph("1d",'SPY',sp500,5.5,2.2,1,0,1,5)).grid(row=2,column=0,pady=(15,0))
+        tk.Button(sp500,text="1w",width=15,command=lambda: update_graph("1w",'SPY',sp500,5.5,2.2,1,0,1,5)).grid(row=2,column=1,pady=(15,0))
+        tk.Button(sp500,text="1m",width=15,command=lambda: update_graph("1m",'SPY',sp500,5.5,2.2,1,0,1,5)).grid(row=2,column=2,pady=(15,0))
+        tk.Button(sp500,text="1y",width=15,command=lambda: update_graph("1y",'SPY',sp500,5.5,2.2,1,0,1,5)).grid(row=2,column=3,pady=(15,0))
+        tk.Button(sp500,text="5y",width=15,command=lambda: update_graph("5y",'SPY',sp500,5.5,2.2,1,0,1,5)).grid(row=2,column=4,pady=(15,0))
 
         dia = tk.Frame(self, width=500, height=300)
         dia_current = tk.Label(dia, text = "Dow Jones (DIA) " + "%.2f" % sv.get_current('DIA') + " USD", font=entry_font)
         dia_change = tk.Label(dia, font=entry_font)
-        self.config_updates(dia_change,sv.get_pct_change('DIA'))
-        
-        dia_fig = Figure(figsize=(5.5,2.2),dpi=100)
-        dia_fig.patch.set_facecolor('#F0F0F0')
-        dia_ax = dia_fig.add_subplot(111)
-        plot = sns.lineplot(x='timestamp',y='close',lw=0.8,data=sv.get_historical_data('DIA',"1y"),ax=dia_ax)
-        plot.set(xlabel=None,ylabel=None)
-        dia_canvas = FigureCanvasTkAgg(dia_fig, master=dia)
+        config_updates(dia_change,sv.get_pct_change('DIA'))
         
         dia_current.grid(row=0,column=0,padx=(30,0),columnspan=3)
         dia_change.grid(row=0,column=3,padx=(0,30),columnspan=2)
-        dia_canvas.get_tk_widget().grid(row=1,column=0,columnspan=5)
-        
-        for count,val in enumerate(timeframes):
-            tk.Button(dia,text=val,width=15).grid(row=2,column=count,pady=(15,0))
+        tk.Button(dia,text="1d",width=15,command=lambda: update_graph("1d",'DIA',dia,5.5,2.2,1,0,1,5)).grid(row=2,column=0,pady=(15,0))
+        tk.Button(dia,text="1w",width=15,command=lambda: update_graph("1w",'DIA',dia,5.5,2.2,1,0,1,5)).grid(row=2,column=1,pady=(15,0))
+        tk.Button(dia,text="1m",width=15,command=lambda: update_graph("1m",'DIA',dia,5.5,2.2,1,0,1,5)).grid(row=2,column=2,pady=(15,0))
+        tk.Button(dia,text="1y",width=15,command=lambda: update_graph("1y",'DIA',dia,5.5,2.2,1,0,1,5)).grid(row=2,column=3,pady=(15,0))
+        tk.Button(dia,text="5y",width=15,command=lambda: update_graph("5y",'DIA',dia,5.5,2.2,1,0,1,5)).grid(row=2,column=4,pady=(15,0))
+
+        update_graph("1y","SPY",sp500,5.5,2.2,1,0,1,5)
+        update_graph("1y","DIA",dia,5.5,2.2,1,0,1,5)
         
         #blit items on screen
         back_button.grid(row=0,column=0)
@@ -150,8 +142,8 @@ class StockViewerMain(tk.Frame):
         entry_button.grid(row=0,column=3,padx=(30,0))
         refresh_button.grid(row=0,column=4,padx=(30,0))
         tk.Label(self,text="Today's Market Updates",font=entry_font_bold,fg='#575757').grid(row=1,column=1,pady=(20,15),columnspan=4)
-        sp500.grid(row=0,column=5, padx=(45,0), pady=(25,0), rowspan=5)
-        dia.grid(row=5,column=5, padx=(45,0), pady=(25,0), rowspan=5)
+        sp500.grid(row=0,column=5, padx=(20,0), pady=(25,0), rowspan=5)
+        dia.grid(row=5,column=5, padx=(20,0), pady=(25,0), rowspan=5)
         
         for count,val in enumerate(sv.gen_random_8()):
             tmp = self.stockPreview(val,self)
@@ -178,7 +170,7 @@ class StockViewerMain(tk.Frame):
         def update_price(self):
             self.current.config(text="%.2f" % sv.get_current(self.stock) + "  USD")
             pct_change = sv.get_pct_change(self.stock)
-            self.main.config_updates(self.change,pct_change)
+            config_updates(self.change,pct_change)
             
     def enter_ticker(self,entry):
         if not sv.stocks[sv.stocks['Symbol'] == entry].empty:
@@ -186,30 +178,71 @@ class StockViewerMain(tk.Frame):
         else:
             messagebox.showwarning("Warning","Stock Symbol Not Found!")
 
-    def config_updates(self,label,vals):
-        if(vals[0] < 0):
-            label.config(text=str(vals[0]) + " (" + str(vals[1]) + "%)" + " ▼")
-            label.config(fg="#EF2D2D")
-        elif(vals[0] > 0):         
-            label.config(text="+" + str(vals[0]) + " (" + str(vals[1]) + "%)" + " ▲")
-            label.config(fg="#27D224")
-        else:
-            label.config(text="+0.00 (0.00%)")
-            label.config(fg="#27D224")
-
 class IndivStockViewer(tk.Frame):
 
     def __init__(self, parent, stock):
         tk.Frame.__init__(self, parent)
+        title_font = tkfont.Font(family='Helvetica Neue', weight='bold',size=26)
+        small_font = tkfont.Font(family='Helvetica Neue', weight='bold',size=18)
+        lbl_font = tkfont.Font(family='Bahnschrift Light', size=14)
+        lbl_small = tkfont.Font(family='Bahnschrift Light', size=12)
+        
         self.stock = stock
+        self.current = tk.Label(self, text = sv.get_current(self.stock), font=title_font, fg="#444444")
+        self.change = tk.Label(self,font=small_font)
+        info_frame = tk.Frame(self, width=400, height=550, bg="black")
+        graph_frame = tk.Frame(self, width=500, height=550)
+        profile_frame = tk.Frame(self, width=460, height=210)
+        financials_frame = tk.Frame(self, width=200, height=210)
 
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                            command=lambda: parent.switch_frame(StockViewerMain))
-        stock_symbol = tk.Label(self, text=self.stock)
-        current_price = tk.Label(self, text = sv.get_current(self.stock))
-        stock_symbol.grid(row=0,column=1)
-        current_price.grid(row=0,column=2)
-        back_button.grid(row=0,column=0)
+
+        stock_info = sv.get_stock_info(self.stock)
+
+        stock_symbol = tk.Label(self, text=stock_info['shortName'] + " (" + self.stock + ")",font=title_font, fg="#444444")
+        refresh_button = tk.Button(self,text="Refresh",font=lbl_font,command=lambda: parent.switch_stock(self.stock))
+
+        back_button.place(relx=0,rely=0)
+        stock_symbol.place(x=80,y=7)
+        refresh_button.place(x=1180,y=10)
+        self.current.place(x=80,y=70)
+        self.change.place(x=300,y=75)
+        info_frame.place(x=80,y=140)
+        graph_frame.place(x=500,y=25)
+        financials_frame.place(x=550,y=480)
+        profile_frame.place(x=770,y=480)
+
+        #graph frame
+        update_graph('1y',self.stock,graph_frame,8,4,0,0,1,7)
+        tk.Label(graph_frame,text="",width=15).grid(row=1,column=0,pady=(15,0))
+        tk.Button(graph_frame,text="1d",width=15,command=lambda: update_graph("1d",self.stock,graph_frame,8,4,0,0,1,7)).grid(row=1,column=1)
+        tk.Button(graph_frame,text="1w",width=15,command=lambda: update_graph("1w",self.stock,graph_frame,8,4,0,0,1,7)).grid(row=1,column=2)
+        tk.Button(graph_frame,text="1m",width=15,command=lambda: update_graph("1m",self.stock,graph_frame,8,4,0,0,1,7)).grid(row=1,column=3)
+        tk.Button(graph_frame,text="1y",width=15,command=lambda: update_graph("1y",self.stock,graph_frame,8,4,0,0,1,7)).grid(row=1,column=4)
+        tk.Button(graph_frame,text="5y",width=15,command=lambda: update_graph("5y",self.stock,graph_frame,8,4,0,0,1,7)).grid(row=1,column=5)
+        tk.Label(graph_frame,text="",width=15).grid(row=1,column=6,pady=(15,0))
+
+        #profile_frame
+        tk.Label(profile_frame,text="Company Profile",font=lbl_font).place(x=0,y=0)
+        tk.Label(profile_frame,text="Sector: " + stock_info['sector'],font=lbl_small).place(x=0,y=60)
+        tk.Label(profile_frame,text="Country: " + stock_info['country'],font=lbl_small).place(x=0,y=85)
+        tk.Label(profile_frame,text="Address: " + stock_info['address1'],font=lbl_small).place(x=0,y=110)
+        tk.Label(profile_frame,text="Website: " + stock_info['website'],font=lbl_small).place(x=0,y=135)
+        tk.Label(profile_frame,text="Full-Time Employees: " + str(stock_info['fullTimeEmployees']),font=lbl_small).place(x=0,y=160)
+
+        #financials_frame
+        tk.Label(financials_frame,text="Financials",font=lbl_font).grid(row=0,column=0)
+        tk.Button(financials_frame,text="Income Statement",font=lbl_small,width=15).grid(row=1,column=0,pady=(25,0))
+        tk.Button(financials_frame,text="Balance Sheet",font=lbl_small,width=15).grid(row=2,column=0,pady=15)
+        tk.Button(financials_frame,text="Cash Flow",font=lbl_small,width=15).grid(row=3,column=0)
+        
+        self.update_price()
+
+    def update_price(self):
+        self.current.config(text="%.2f" % sv.get_current(self.stock) + "  USD")
+        pct_change = sv.get_pct_change(self.stock)
+        config_updates(self.change,pct_change)
 
 class PageTwo(tk.Frame):
 
@@ -220,11 +253,38 @@ class PageTwo(tk.Frame):
                            command=lambda: parent.switch_frame(StartPage))
         button.pack()
 
+def get_graph(timeframe,index,frame,figx,figy):
+    tmp = Figure(figsize=(figx,figy),dpi=100)
+    tmp.patch.set_facecolor('#F0F0F0')
+    tmp_ax = tmp.add_subplot(111)
+
+    info_df = sv.get_historical_data(index,timeframe)
+    plot = sns.lineplot(x='timestamp',y='close',lw=0.8,data=info_df,ax=tmp_ax)
+    plot.set(xlabel=None,ylabel=None)
+    return FigureCanvasTkAgg(tmp, master=frame)
+
+def update_graph(timeframe,index,frame,figx,figy,row,col,rowsp,colsp):
+    new_canvas = get_graph(timeframe,index,frame,figx,figy)
+    new_canvas.draw()
+    new_canvas.get_tk_widget().grid(row=row,column=col,rowspan=rowsp,columnspan=colsp)
+
+def config_updates(label,vals):
+    if(vals[0] < 0):
+        label.config(text=str(vals[0]) + " (" + str(vals[1]) + "%)" + " ▼")
+        label.config(fg="#EF2D2D")
+    elif(vals[0] > 0):         
+        label.config(text="+" + str(vals[0]) + " (" + str(vals[1]) + "%)" + " ▲")
+        label.config(fg="#27D224")
+    else:
+        label.config(text="+0.00 (0.00%)")
+        label.config(fg="#27D224")
 
 if __name__ == "__main__":
     global app
     app = TkPortfolio()
+    
     app.geometry("1280x720")
     app.iconbitmap("Images\icon.ico")
     app.title("TKPortfolio")
+    app.resizable(False, False)
     app.mainloop()
