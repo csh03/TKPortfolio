@@ -46,11 +46,9 @@ def get_stock_info(ticker):
     ticker = yf.Ticker(ticker)
     return ticker.info
 
-def get_pct_change(ticker):
+def get_prev_close(ticker):
     end = datetime.now() - timedelta(days=1)
     start = datetime.now() - timedelta(days=4)
-    current = get_current(ticker)
-
     request_params = StockBarsRequest(
                     symbol_or_symbols=ticker,
                     timeframe=TimeFrame.Day,
@@ -62,6 +60,11 @@ def get_pct_change(ticker):
         prev_close = client.get_stock_bars(request_params).df.iloc[-2]['close']
     else:
         prev_close = client.get_stock_bars(request_params).df.iloc[-1]['close']
+    return prev_close
+
+def get_pct_change(ticker):
+    current = get_current(ticker)
+    prev_close = get_prev_close(ticker)
     diff = (current - prev_close)
     pct_change = diff/prev_close*100
     return (round(diff,2),round(pct_change,2))
@@ -96,5 +99,3 @@ def get_historical_data(ticker,timeframe):
     bars = client.get_stock_bars(request_params)
 
     return bars.df
-
-#print(get_income_statement('NVDA'))

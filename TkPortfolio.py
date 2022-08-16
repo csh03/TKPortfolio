@@ -191,7 +191,7 @@ class IndivStockViewer(tk.Frame):
         self.stock = stock
         self.current = tk.Label(self, text = sv.get_current(self.stock), font=title_font, fg="#444444")
         self.change = tk.Label(self,font=small_font)
-        info_frame = tk.Frame(self, width=400, height=550, bg="black")
+        info_frame = tk.Frame(self, width=400, height=550)
         graph_frame = tk.Frame(self, width=500, height=550)
         profile_frame = tk.Frame(self, width=460, height=210)
         financials_frame = tk.Frame(self, width=200, height=210)
@@ -203,18 +203,28 @@ class IndivStockViewer(tk.Frame):
 
         stock_symbol = tk.Label(self, text=stock_info['shortName'] + " (" + self.stock + ")",font=title_font, fg="#444444")
         refresh_button = tk.Button(self,text="Refresh",font=lbl_font,command=lambda: parent.switch_stock(self.stock))
+        fullsize_button = tk.Button(self,text="View Full Size",font=lbl_small)
 
         back_button.place(relx=0,rely=0)
         stock_symbol.place(x=80,y=7)
+        fullsize_button.place(x=850,y=15)
         refresh_button.place(x=1180,y=10)
         self.current.place(x=80,y=70)
         self.change.place(x=300,y=75)
-        info_frame.place(x=80,y=140)
+        info_frame.place(x=82,y=130)
         graph_frame.place(x=500,y=25)
         financials_frame.place(x=550,y=480)
         profile_frame.place(x=770,y=480)
 
-        #graph frame
+        #info_frame
+        tk.Label(info_frame,text="Previous Close: " + str(sv.get_prev_close(self.stock)), fg="#444444", font=small_font).place(x=0,y=0)
+        tk.Label(info_frame,text="Open: ", fg="#444444", font=lbl_font).place(x=0,y=50)
+        tk.Label(info_frame,text="Market Cap: ", fg="#444444", font=lbl_font).place(x=0,y=75)
+        tk.Label(info_frame,text="P/E Ratio (TTM): ", fg="#444444", font=lbl_font).place(x=0,y=100)
+        tk.Label(info_frame,text="EPS (TTM): ", fg="#444444", font=lbl_font).place(x=0,y=125)
+        tk.Label(info_frame,text="Volume: ", fg="#444444", font=lbl_font).place(x=0,y=150)
+
+        #graph_frame
         update_graph('1y',self.stock,graph_frame,8,4,0,0,1,7)
         tk.Label(graph_frame,text="",width=15).grid(row=1,column=0,pady=(15,0))
         tk.Button(graph_frame,text="1d",width=15,command=lambda: update_graph("1d",self.stock,graph_frame,8,4,0,0,1,7)).grid(row=1,column=1)
