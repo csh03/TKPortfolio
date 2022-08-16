@@ -5,6 +5,7 @@ from tkinter import messagebox
 from PIL import ImageTk,Image
 import user_similarity as sim
 import stock_viewer as sv
+from pandastable import Table
 
 # For Visualization
 import matplotlib.pyplot as plt
@@ -233,9 +234,9 @@ class IndivStockViewer(tk.Frame):
 
         #financials_frame
         tk.Label(financials_frame,text="Financials",font=lbl_font).grid(row=0,column=0)
-        tk.Button(financials_frame,text="Income Statement",font=lbl_small,width=15).grid(row=1,column=0,pady=(25,0))
-        tk.Button(financials_frame,text="Balance Sheet",font=lbl_small,width=15).grid(row=2,column=0,pady=15)
-        tk.Button(financials_frame,text="Cash Flow",font=lbl_small,width=15).grid(row=3,column=0)
+        tk.Button(financials_frame,text="Income Statement",font=lbl_small,width=15,command=lambda: self.show_financial("Income Statement",self.stock)).grid(row=1,column=0,pady=(25,0))
+        tk.Button(financials_frame,text="Balance Sheet",font=lbl_small,width=15,command=lambda: self.show_financial("Balance Sheet",self.stock)).grid(row=2,column=0,pady=15)
+        tk.Button(financials_frame,text="Cash Flow",font=lbl_small,width=15,command=lambda: self.show_financial("Cash Flow",self.stock)).grid(row=3,column=0)
         
         self.update_price()
 
@@ -243,6 +244,31 @@ class IndivStockViewer(tk.Frame):
         self.current.config(text="%.2f" % sv.get_current(self.stock) + "  USD")
         pct_change = sv.get_pct_change(self.stock)
         config_updates(self.change,pct_change)
+
+    def show_financial(self,sheet_type,stock):
+        response = messagebox.askokcancel("Notice","Opening in new window. Proceed?")
+        if(response == 1):
+            display = tk.Toplevel(self)
+            display.title(sheet_type)
+            display.geometry("800x500")
+            display.iconbitmap("Images\icon.ico")
+            display.resizable(False, False)
+            if(sheet_type == "Income Statement"):
+                data = sv.get_income_statement(stock)
+            elif(sheet_type == "Balance Sheet"):
+                data = sv.get_balance_sheet(stock)
+            else:
+                data = sv.get_cash_flow(stock)
+
+            data.fillna("NONE",inplace=True)
+            frame = tk.Frame(display)
+            frame.pack(fill='y',expand=True)
+            table = Table(frame,dataframe=data,editable=False,showtoolbar=False, showstatusbar=True, maxcellwidth=175)
+            table.showIndex()
+            table.show()
+            
+        else:
+            return
 
 class PageTwo(tk.Frame):
 
