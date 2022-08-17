@@ -196,6 +196,7 @@ class IndivStockViewer(tk.Frame):
         graph_frame = tk.Frame(self, width=500, height=550)
         profile_frame = tk.Frame(self, width=460, height=210)
         financials_frame = tk.Frame(self, width=200, height=210)
+        stats_frame = tk.Frame(self, width=450, height=210)
 
         back_button = tk.Button(self, text="<",font=parent.label_font,width=3,height=1,
                            command=lambda: parent.switch_frame(StockViewerMain))
@@ -207,7 +208,7 @@ class IndivStockViewer(tk.Frame):
         fullsize_button = tk.Button(self,text="View Full Size",font=lbl_small)
 
         back_button.place(relx=0,rely=0)
-        stock_symbol.place(x=80,y=7)
+        stock_symbol.place(x=80,y=10)
         fullsize_button.place(x=850,y=15)
         refresh_button.place(x=1180,y=10)
         self.current.place(x=80,y=70)
@@ -216,17 +217,30 @@ class IndivStockViewer(tk.Frame):
         graph_frame.place(x=500,y=25)
         financials_frame.place(x=580,y=480)
         profile_frame.place(x=800,y=480)
+        stats_frame.place(x=82,y=480)
 
         #info_frame
         tk.Label(info_frame,text="Previous Close: " + str(sv.get_prev_close(self.stock)), fg="#444444", font=small_font).place(x=0,y=0)
 
-        info_dict = {'Open':'regularMarketOpen','Market Cap':'marketCap','52 Week High':'fiftyTwoWeekHigh',
-                     'P/E Ratio (TTM)':'trailingPE','EPS (TTM)':'trailingEps','Volume':'regularMarketVolume',
-                     'Beta (5Y Monthly)':'beta'}
+        info_dict = {'Market Cap':'marketCap','52 Week High':'fiftyTwoWeekHigh','P/E Ratio (TTM)':'trailingPE',
+                     'EPS (TTM)':'trailingEps','Volume':'regularMarketVolume','Beta (5Y Monthly)':'beta',
+                     'Profit Margin':'profitMargins'}
 
         for count, key in enumerate(info_dict):
             tk.Label(info_frame,text=key + ": ", fg="#444444", font=lbl_font).place(x=0,y=70 + 35*count)
-            tk.Label(info_frame,text=str(stock_info[info_dict[key]]), fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=200,y=70 + 35*count)
+            tk.Label(info_frame,text="%.2f" % str(stock_info[info_dict[key]]), fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=200,y=70 + 35*count)
+
+        #stats_frame
+        tk.Label(stats_frame,text="Statistics Today",font=lbl_font_bold).place(x=0,y=0)
+
+        stats_dict= {'Market Open':'regularMarketOpen','Day High':'dayHigh','Day Low':'dayLow','Bid':('bid','bidSize')}
+        for count, key in enumerate(stats_dict):
+            tk.Label(stats_frame,text=key + ": ", fg="#444444", font=lbl_font).place(x=0,y=50 + 35*count)
+            if key == 'Bid':
+                tk.Label(stats_frame,text=str(stock_info[stats_dict[key][0]]) + " x " + str(stock_info[stats_dict[key][1]]), fg="#444444",
+                                              width=17, font=lbl_font_bold, anchor="e").place(x=200,y=50 + 35*count)
+            else:
+                tk.Label(stats_frame,text=str(stock_info[stats_dict[key]]), fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=200,y=50 + 35*count)
 
         #graph_frame
         update_graph('1y',self.stock,graph_frame,8,4,0,0,1,7)
@@ -239,7 +253,7 @@ class IndivStockViewer(tk.Frame):
         tk.Label(graph_frame,text="",width=15).grid(row=1,column=6,pady=(15,0))
 
         #profile_frame
-        tk.Label(profile_frame,text="Company Profile",font=lbl_font).place(x=0,y=0)
+        tk.Label(profile_frame,text="Company Profile",font=lbl_font_bold).place(x=0,y=0)
         tk.Label(profile_frame,text="Sector: " + stock_info['sector'],font=lbl_small).place(x=0,y=60)
         tk.Label(profile_frame,text="Country: " + stock_info['country'],font=lbl_small).place(x=0,y=85)
         tk.Label(profile_frame,text="Address: " + stock_info['address1'],font=lbl_small).place(x=0,y=110)
@@ -247,7 +261,7 @@ class IndivStockViewer(tk.Frame):
         tk.Label(profile_frame,text="Full-Time Employees: " + str(stock_info['fullTimeEmployees']),font=lbl_small).place(x=0,y=160)
 
         #financials_frame
-        tk.Label(financials_frame,text="Financials",font=lbl_font).grid(row=0,column=0)
+        tk.Label(financials_frame,text="Financials",font=lbl_font_bold).grid(row=0,column=0)
         tk.Button(financials_frame,text="Income Statement",font=lbl_small,width=15,command=lambda: self.show_financial("Income Statement",self.stock)).grid(row=1,column=0,pady=(25,0))
         tk.Button(financials_frame,text="Balance Sheet",font=lbl_small,width=15,command=lambda: self.show_financial("Balance Sheet",self.stock)).grid(row=2,column=0,pady=15)
         tk.Button(financials_frame,text="Cash Flow",font=lbl_small,width=15,command=lambda: self.show_financial("Cash Flow",self.stock)).grid(row=3,column=0)
@@ -318,6 +332,16 @@ def config_updates(label,vals):
     else:
         label.config(text="+0.00 (0.00%)")
         label.config(fg="#27D224")
+
+def format_num(n):
+    suffix = [""," M"," B"," T"]
+    vals = [1,1e6,1e9,1e12]
+    for i in range(len(vals) - 1):
+        if vals[i + 1] > n:
+            return str(round(n/vals[i],2)) + suffix[i]
+        elif n > vals[-1]:
+            return str(round(n/vals[-1],2)) + suffix[-1]
+    return ""
 
 if __name__ == "__main__":
     global app
