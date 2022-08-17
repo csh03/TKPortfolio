@@ -99,3 +99,5 @@ def get_historical_data(ticker,timeframe):
     bars = client.get_stock_bars(request_params)
 
     return bars.df
+
+#print(get_stock_info('NVDA'))
