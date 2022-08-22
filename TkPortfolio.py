@@ -21,8 +21,7 @@ class TkPortfolio(tk.Tk):
 
         self.label_font = tkfont.Font(family='Bahnschrift', size=18)
         self._frame = None
-        #self.switch_frame(StartPage)
-        self.switch_stock("NVDA")
+        self.switch_frame(StartPage)
     
     def switch_frame(self, page_name):
         self.update_idletasks()
@@ -54,14 +53,25 @@ class StartPage(tk.Frame):
         logo_lbl.pack(side="top", fill="x", pady=10)
         
         button1 = tk.Button(self,fg='#494949',font=parent.label_font,text="Portfolio Creator",bd=4,width=20,height=2,
-                            command=lambda: parent.switch_frame(PageTwo))
-        button2 = tk.Button(self,fg='#494949',font=parent.label_font,text="Stock Tracker",bd=4,width=20,height=2,
+                            command=lambda: parent.switch_frame(PortfolioLoad))
+        button2 = tk.Button(self,fg='#494949',font=parent.label_font,text="Stock Screener",bd=4,width=20,height=2,
                             command=lambda: parent.switch_frame(StockViewerMain))
         button3 = tk.Button(self,fg='#494949',font=parent.label_font,text="Exit",bd=4,width=20,height=2,
                             command=parent.quit)
         button1.pack()
         button2.pack()
         button3.pack()
+
+class PortfolioLoad(tk.Frame):
+
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+
+        tk.Button(self, text="<",font=parent.label_font,width=3,height=1,command=lambda: parent.switch_frame(StartPage)).place(relx=0,rely=0)
+        button_frame = tk.Frame(self)
+        tk.Button(button_frame,fg='#494949',font=parent.label_font,text="Start New Portfolio",bd=4,width=30,height=2,command=lambda: parent.switch_frame(PortfolioLoad)).pack()
+        tk.Button(button_frame,fg='#494949',font=parent.label_font,text="Load Existing Portfolio",bd=4,width=30,height=2,command=lambda: parent.switch_frame(PortfolioLoad)).pack()
+        button_frame.place(relx=0.5,rely=0.5,anchor=tk.CENTER)
 
 class StockViewerMain(tk.Frame):
 
@@ -228,7 +238,12 @@ class IndivStockViewer(tk.Frame):
 
         for count, key in enumerate(info_dict):
             tk.Label(info_frame,text=key + ": ", fg="#444444", font=lbl_font).place(x=0,y=70 + 35*count)
-            tk.Label(info_frame,text="%.2f" % str(stock_info[info_dict[key]]), fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=200,y=70 + 35*count)
+            if key == 'Market Cap' or key == 'Volume':
+                tk.Label(info_frame,text=str(format_num(stock_info[info_dict[key]])), fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=180,y=70 + 35*count)
+            elif key == 'Profit Margin':
+                tk.Label(info_frame,text=str(stock_info[info_dict[key]] * 100) + "%", fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=180,y=70 + 35*count)
+            else:
+                tk.Label(info_frame,text="%.2f" % stock_info[info_dict[key]], fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=180,y=70 + 35*count)
 
         #stats_frame
         tk.Label(stats_frame,text="Statistics Today",font=lbl_font_bold).place(x=0,y=0)
@@ -237,10 +252,10 @@ class IndivStockViewer(tk.Frame):
         for count, key in enumerate(stats_dict):
             tk.Label(stats_frame,text=key + ": ", fg="#444444", font=lbl_font).place(x=0,y=50 + 35*count)
             if key == 'Bid':
-                tk.Label(stats_frame,text=str(stock_info[stats_dict[key][0]]) + " x " + str(stock_info[stats_dict[key][1]]), fg="#444444",
-                                              width=17, font=lbl_font_bold, anchor="e").place(x=200,y=50 + 35*count)
+                tk.Label(stats_frame,text="%.2f" % stock_info[stats_dict[key][0]] + " x " + str(stock_info[stats_dict[key][1]]), fg="#444444",
+                                              width=17, font=lbl_font_bold, anchor="e").place(x=180,y=50 + 35*count)
             else:
-                tk.Label(stats_frame,text=str(stock_info[stats_dict[key]]), fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=200,y=50 + 35*count)
+                tk.Label(stats_frame,text="%.2f" % stock_info[stats_dict[key]], fg="#444444", width=17, font=lbl_font_bold, anchor="e").place(x=180,y=50 + 35*count)
 
         #graph_frame
         update_graph('1y',self.stock,graph_frame,8,4,0,0,1,7)
@@ -297,15 +312,6 @@ class IndivStockViewer(tk.Frame):
             
         else:
             return
-
-class PageTwo(tk.Frame):
-
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent)
-
-        button = tk.Button(self, text="Go to the start page",
-                           command=lambda: parent.switch_frame(StartPage))
-        button.pack()
 
 def get_graph(timeframe,index,frame,figx,figy):
     tmp = Figure(figsize=(figx,figy),dpi=100)
